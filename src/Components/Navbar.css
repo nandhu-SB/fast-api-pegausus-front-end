@@ -1,0 +1,10 @@
+.navbar-container {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  padding: 30px 0;
+}
+a {
+  all: unset;
+  cursor: pointer; /* Optional, keeps it clickable */
+}
