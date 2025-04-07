@@ -12,18 +12,38 @@ import {
   Pie,
   Cell,
   Legend,
+  BarChart,
+  Bar,
 } from "recharts";
 
 import "./Home.css";
 import Navbar from "./Navbar";
 import Ticker from "./Ticker";
+import PriceChart from "./PriceChart";
+import QuarterlyFinancials from "./QuarterlyFinancials";
+import FinancialsTable from "./QuarterlyFinancials";
+import SustainabilityReport from "./Sustainabilityreport";
 
 function HomePage() {
+  const [historyPeriod, setHistoryPeriod] = useState("7d");
   const [ticker, setTicker] = useState("");
   const [stockData, setStockData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
+  const getRecommendationsData = () => {
+    if (stockData && stockData.recommendations) {
+      return stockData.recommendations.map((item) => ({
+        period: `T-${item.period}`,
+        strongBuy: item.strongBuy,
+        buy: item.buy,
+        hold: item.hold,
+        sell: item.sell,
+        strongSell: item.strongSell,
+      }));
+    }
+    return [];
+  };
 
   // // Logs whenever stockData updates
   // useEffect(() => {
@@ -39,20 +59,22 @@ function HomePage() {
     }
   };
 
-  const fetchStockData = async () => {
+  const fetchStockData = async (period = "7d") => {
     if (!ticker) return;
     setLoading(true);
 
     try {
       // const response = await fetch(`http://127.0.0.1:8000/stock/${ticker}.NS`);
-      const response = await fetch(`${apiUrl}/stock/${ticker}.NS`);
+      const response = await fetch(
+        `${apiUrl}/stock/${ticker}.NS?period=${period}`
+      );
       const data = await response.json();
 
       if (data.error) {
         setError(data.error);
         setStockData(null);
       } else {
-        console.log("Fetched News Data (fetchStockData):", data.news); // Direct log after fetching
+        // console.log("Fetched News Data (fetchStockData):", data.news);
         setStockData(data);
         setError("");
       }
@@ -73,6 +95,7 @@ function HomePage() {
       return value.toFixed(2);
     }
   };
+
   const getHoldingsData = () => {
     if (stockData && stockData.holders && stockData.holders.Value) {
       return [
@@ -133,7 +156,6 @@ function HomePage() {
                 {stockData.business_summary}
               </p>
             </div>
-
             <div className="container-section" id="fundaementals">
               <h3>Fundamentals</h3>
               <div className="section">
@@ -159,9 +181,6 @@ function HomePage() {
                   <p>
                     <strong>52-Week Low:</strong> ₹{stockData["52_week_low"]}
                   </p>
-                </div>
-
-                <div className="subsection">
                   <p>
                     <strong>Market Cap:</strong>{" "}
                     {formatMarketCap(stockData.market_cap)}
@@ -188,8 +207,7 @@ function HomePage() {
                 </div>
               </div>
             </div>
-
-            {stockData.history && stockData.history.length > 0 && (
+            {/* {stockData.history && stockData.history.length > 0 && (
               <div className="container-section" id="price-chart">
                 <h3>1-Day Price Trend</h3>
                 <ResponsiveContainer width="100%" height={300}>
@@ -252,19 +270,63 @@ function HomePage() {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-            )}
-
+            )} */}
+            <PriceChart stockData={stockData} fetchStockData={fetchStockData} />
             {stockData.quarterly_financials && (
+              <FinancialsTable
+                financials={stockData.quarterly_financials}
+                title="Quarterly Financials"
+                selectedKeys={[
+                  "Operating Revenue",
+                  "Total Revenue",
+                  "Cost Of Revenue",
+                  "Gross Profit",
+                  "Operating Expense",
+                  "Other Operating Expenses",
+                  "Operating Income",
+                  "Net Non Operating Interest Income Expense",
+                ]}
+              />
+            )}
+            {stockData.yearly_financials && (
+              <FinancialsTable
+                financials={stockData.yearly_financials}
+                title="Yearly Financials"
+                selectedKeys={[
+                  "Operating Revenue",
+                  "Total Revenue",
+                  "Cost Of Revenue",
+                  "Gross Profit",
+                  "Operating Expense",
+                  "Other Operating Expenses",
+                  "Operating Income",
+                  "Net Non Operating Interest Income Expense",
+                ]}
+              />
+            )}
+            {stockData.yearly_balance_sheet && (
+              <FinancialsTable
+                financials={stockData.yearly_balance_sheet}
+                title="Yearly Balance Sheet"
+                selectedKeys={[
+                  "Total Assets",
+                  "Total Liabilities",
+                  "Shareholder Equity",
+                  "Long-Term Debt",
+                ]}
+              />
+            )}
+            {/* {stockData.quarterly_cashflow && (
               <div className="container-section" id="qoq">
-                <h3>Quarterly Financials</h3>
+                <h3>Quarterly cashflow</h3>
                 <div className="responsive-table">
                   <table>
                     <thead>
                       <tr>
                         <th>Quarter</th>
                         {Object.keys(
-                          stockData.quarterly_financials[
-                            Object.keys(stockData.quarterly_financials)[0]
+                          stockData.quarterly_cashflow[
+                            Object.keys(stockData.quarterly_cashflow)[0]
                           ] || {}
                         ).map((key, idx) => (
                           <th key={idx}>{key}</th>
@@ -272,7 +334,7 @@ function HomePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.entries(stockData.quarterly_financials).map(
+                      {Object.entries(stockData.quarterly_cashflow).map(
                         ([date, values], idx) => (
                           <tr key={idx}>
                             <td>{date}</td>
@@ -288,44 +350,22 @@ function HomePage() {
                   </table>
                 </div>
               </div>
+            )} */}
+            {stockData.yearly_cashflow && (
+              <FinancialsTable
+                financials={stockData.yearly_cashflow}
+                title="Yearly Cash Flow"
+                selectedKeys={[
+                  "Cash Flow Statement",
+                  "Operating Cash Flow",
+                  "Investing Cash Flow",
+                  "Financing Cash Flow",
+                  "Changes In Cash",
+                  "Beginning Cash Position",
+                  "End Cash Position",
+                ]}
+              />
             )}
-
-            {stockData.yearly_financials && (
-              <div className="container-section" id="yoy">
-                <h3>Yearly Financials</h3>
-                <div className="responsive-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Year</th>
-                        {Object.keys(
-                          stockData.yearly_financials[
-                            Object.keys(stockData.yearly_financials)[0]
-                          ] || {}
-                        ).map((key, idx) => (
-                          <th key={idx}>{key}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(stockData.yearly_financials).map(
-                        ([date, values], idx) => (
-                          <tr key={idx}>
-                            <td>{date}</td>
-                            {Object.values(values).map((val, i) => (
-                              <td key={i}>
-                                {val !== 0 ? val.toLocaleString() : "N/A"}
-                              </td>
-                            ))}
-                          </tr>
-                        )
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
             <div className="container-section" id="holdings">
               <h3>Ownership Breakdown</h3>
               {stockData.holders && stockData.holders.Value && (
@@ -368,8 +408,42 @@ function HomePage() {
                 </section>
               )}
             </div>
-
-            {/* News Section */}
+            <div className="container-sections" id="sustainability_score">
+              {stockData.sustainability_score &&
+                Object.keys(stockData.sustainability_score).length > 0 && (
+                  <SustainabilityReport data={stockData.sustainability_score} />
+                )}
+            </div>
+            <div className="container-section" id="recommendations">
+              <h3>Analyst Recommendations</h3>
+              {stockData.recommendations &&
+              stockData.recommendations.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={getRecommendationsData()}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="period" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="strongBuy" fill="#008000" name="Strong Buy" />
+                    <Bar dataKey="buy" fill="#00FF00" name="Buy" />
+                    <Bar dataKey="hold" fill="#FFA500" name="Hold" />
+                    <Bar dataKey="sell" fill="#FF4500" name="Sell" />
+                    <Bar
+                      dataKey="strongSell"
+                      fill="#FF0000"
+                      name="Strong Sell"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p>No recommendations available</p>
+              )}
+            </div>
+            ;{/* News Section */}
             <div className="container-section" id="news">
               <h3>Around the world</h3>
 

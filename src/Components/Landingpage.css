@@ -1,0 +1,123 @@
+.landing-page {
+  /* font-family: sans-serif; */
+  min-height: 100vh;
+  background: linear-gradient(
+    90deg,
+    var(--olakka-color-blue2),
+    var(--olakka-color-blue2)
+  );
+  /* background: var(--secondary-color); */
+  /* color: var(--dark-color); */
+  overflow-x: hidden;
+}
+@property --bg-angle {
+  inherits: false;
+  initial-value: 0deg;
+  syntax: "<angle>";
+}
+@keyframes spin {
+  to {
+    --bg-angle: 360deg;
+  }
+}
+
+.title-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(
+    90deg,
+    var(--olakka-color-blue1),
+    var(--olakka-color-blue2)
+  );
+  background-size: 200% 200%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 10; /* Ensure it's above other content */
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+  will-change: transform, opacity; /* Optimization hint for browsers */
+  animation: gradientShift 6s ease infinite;
+  box-shadow: var(--dark-color) 0px 5px, oklch(19.59% 0.076 257.93) 0px 15px,
+    var(--dark-color) 0px 20px;
+}
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.title-container h1 {
+  font-size: 3em;
+  margin-bottom: 0.5em;
+}
+
+.content-container {
+  padding-top: 100vh; /* Start content after the title section */
+  /* background-color: #fff; */
+}
+
+.section {
+  padding: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* border-bottom: 1px solid #eee; */
+}
+.section-cards-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.section-cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5%;
+  border: 1px solid var(--primary-color);
+  animation: spin 2.5s infinite linear;
+  margin: 2em;
+  border-radius: 10px 50px;
+
+  background:
+    /* Background colors don’t work with `background-origin`, so use a gradient. */ linear-gradient(
+        to bottom,
+        var(--olakka-color-blue1),
+        var(--olakka-color-blue2)
+      )
+      padding-box,
+    /* ends at inner border edges */
+      conic-gradient(
+        from var(--bg-angle) in oklch longer hue,
+        oklch(0.92 0.11 1) 0 0
+      )
+      border-box; /* extends to outer border edges */
+
+  /* a clear border lets the background gradient shine through */
+  border: 6px solid transparent;
+}
+.section h2 {
+  font-size: 2em;
+  margin-bottom: 0.5em;
+}
+
+/* Add some spacing between sections */
+.section:last-child {
+  border-bottom: none;
+}
+
+/* Basic styling for sections (adjust as needed) */
+.section {
+  max-width: 800px;
+  margin: 0 auto; /* Center the sections */
+}
