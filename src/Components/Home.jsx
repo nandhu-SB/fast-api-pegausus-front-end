@@ -207,70 +207,7 @@ function HomePage() {
                 </div>
               </div>
             </div>
-            {/* {stockData.history && stockData.history.length > 0 && (
-              <div className="container-section" id="price-chart">
-                <h3>1-Day Price Trend</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={stockData.history}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="date"
-                      tickFormatter={(date) => {
-                        const options = { month: "short", day: "numeric" };
-                        return new Date(date).toLocaleDateString(
-                          "en-US",
-                          options
-                        );
-                      }}
-                    />
-                    <YAxis domain={["auto", "auto"]} />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div
-                              style={{
-                                background: "#333",
-                                padding: "10px",
-                                borderRadius: "8px",
-                                color: "#fff",
-                              }}
-                            >
-                              <p>
-                                <strong>
-                                  {new Date(label).toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
-                                </strong>
-                              </p>
-                              <p>Close: ₹{payload[0].value}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="close"
-                      stroke="#8884d8"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                    />
 
-                    <Brush
-                      dataKey="date"
-                      height={30}
-                      stroke="#8884d8"
-                      travellerWidth={8}
-                      startIndex={0}
-                      endIndex={stockData.history.length - 1}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )} */}
             <PriceChart stockData={stockData} fetchStockData={fetchStockData} />
             {stockData.quarterly_financials && (
               <FinancialsTable
@@ -304,53 +241,37 @@ function HomePage() {
                 ]}
               />
             )}
+            {stockData.quarterly_balance_sheet && (
+              <FinancialsTable
+                financials={stockData.quarterly_balance_sheet}
+                title="Quarterly Balance Sheet"
+                selectedKeys={[
+                  "Current Assets",
+                  "Total Non Current Assets",
+                  "Total Assets",
+                  "Current Liabilities",
+                  "Total Non Current Liabilities Net Minority Interest",
+                  "Total Liabilities Net Minority Interest",
+                  "Total Equity Gross Minority Interest",
+                ]}
+              />
+            )}
             {stockData.yearly_balance_sheet && (
               <FinancialsTable
                 financials={stockData.yearly_balance_sheet}
                 title="Yearly Balance Sheet"
                 selectedKeys={[
+                  "Current Assets",
+                  "Total Non Current Assets",
                   "Total Assets",
-                  "Total Liabilities",
-                  "Shareholder Equity",
-                  "Long-Term Debt",
+                  "Current Liabilities",
+                  "Total Non Current Liabilities Net Minority Interest",
+                  "Total Liabilities Net Minority Interest",
+                  "Total Equity Gross Minority Interest",
                 ]}
               />
             )}
-            {/* {stockData.quarterly_cashflow && (
-              <div className="container-section" id="qoq">
-                <h3>Quarterly cashflow</h3>
-                <div className="responsive-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Quarter</th>
-                        {Object.keys(
-                          stockData.quarterly_cashflow[
-                            Object.keys(stockData.quarterly_cashflow)[0]
-                          ] || {}
-                        ).map((key, idx) => (
-                          <th key={idx}>{key}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(stockData.quarterly_cashflow).map(
-                        ([date, values], idx) => (
-                          <tr key={idx}>
-                            <td>{date}</td>
-                            {Object.values(values).map((val, i) => (
-                              <td key={i}>
-                                {val !== 0 ? val.toLocaleString() : "N/A"}
-                              </td>
-                            ))}
-                          </tr>
-                        )
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )} */}
+
             {stockData.yearly_cashflow && (
               <FinancialsTable
                 financials={stockData.yearly_cashflow}
@@ -443,7 +364,7 @@ function HomePage() {
                 <p>No recommendations available</p>
               )}
             </div>
-            ;{/* News Section */}
+            {/* News Section */}
             <div className="container-section" id="news">
               <h3>Around the world</h3>
 
