@@ -30,7 +30,59 @@ function HomePage() {
   const [stockData, setStockData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+  const menuScroll = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setSidebarOpen(false);
+  };
+
+  const [sectionMap, setSectionMap] = useState({});
+  const [visibleSections, setVisibleSections] = useState([]);
+  const allowedIds = [
+    "Fundamentals",
+    "Performance",
+    "Quarterly_Financials",
+    "Yearly_Financials",
+    "Quarterly_Balance_Sheet",
+    "Yearly_Balance_Sheet",
+    "Holdings",
+    "Sustainability",
+    "Recommendations",
+    "News",
+  ];
+
   const apiUrl = import.meta.env.VITE_API_URL;
+  const updateSectionMap = () => {
+    const sections = Array.from(document.querySelectorAll("[id]"));
+    const map = {};
+    const visibleIds = [];
+
+    sections.forEach((el) => {
+      if (allowedIds.includes(el.id)) {
+        map[el.id] = el.offsetTop;
+        visibleIds.push(el.id);
+      }
+    });
+    setSectionMap(map); // Still stores offsetTop data
+    setVisibleSections(visibleIds); // Store filtered visible ids
+  };
+
+  // Call this after data fetch
+  useEffect(() => {
+    updateSectionMap();
+  }, [stockData]);
+
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
   const getRecommendationsData = () => {
     if (stockData && stockData.recommendations) {
       return stockData.recommendations.map((item) => ({
@@ -64,7 +116,6 @@ function HomePage() {
     setLoading(true);
 
     try {
-      // const response = await fetch(`http://127.0.0.1:8000/stock/${ticker}.NS`);
       const response = await fetch(
         `${apiUrl}/stock/${ticker}.NS?period=${period}`
       );
@@ -151,9 +202,33 @@ function HomePage() {
   return (
     <>
       <Ticker />
-      <div className="home-container">
-        {/* <Navbar /> */}
+      <>
+        {/* Hamburger Icon */}
+        <button className="hamburger" onClick={toggleSidebar}>
+          ☰
+        </button>
 
+        {/* Sidebar */}
+        <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+          {visibleSections.map((id) => (
+            <button key={id} onClick={() => scrollToSection(id)}>
+              {id.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+            </button>
+          ))}
+        </div>
+
+        {/* Overlay */}
+        {sidebarOpen && <div className="overlay" onClick={toggleSidebar}></div>}
+      </>
+      {/* 
+      <div className="section-nav-sticky">
+        {Object.keys(sectionMap).map((id) => (
+          <button key={id} onClick={() => scrollToSection(id)}>
+            {id.replace("-", " ")}
+          </button>
+        ))}
+      </div> */}
+      <div className="home-container">
         <h1>Project Pegasus</h1>
 
         <input
@@ -187,7 +262,7 @@ function HomePage() {
               </p>
             </div>
 
-            <div className="container-sections" id="fundaementals">
+            <div className="container-sections" id="Fundamentals">
               <h3>Fundamentals</h3>
               <div className="sections">
                 <div className="subsections">
@@ -240,7 +315,7 @@ function HomePage() {
                 </div>
               </div>
             </div>
-            <div className="container-sections">
+            <div className="container-sections" id="Performance">
               <h3>Performance Summary</h3>
               <div className="cards">
                 <div className="card">
@@ -294,7 +369,7 @@ function HomePage() {
                 fetchStockData={fetchStockData}
               />
             </div>
-            <div className="container-sections">
+            <div className="container-sections" id="Quarterly_Financials">
               {stockData.quarterly_financials && (
                 <FinancialsTable
                   financials={stockData.quarterly_financials}
@@ -312,7 +387,7 @@ function HomePage() {
                 />
               )}
             </div>
-            <div className="container-sections">
+            <div className="container-sections" id="Yearly_Financials">
               {stockData.yearly_financials && (
                 <FinancialsTable
                   financials={stockData.yearly_financials}
@@ -330,7 +405,7 @@ function HomePage() {
                 />
               )}
             </div>
-            <div className="container-sections">
+            <div className="container-sections" id="Quarterly_Balance_Sheet">
               {stockData.quarterly_balance_sheet && (
                 <FinancialsTable
                   financials={stockData.quarterly_balance_sheet}
@@ -347,7 +422,7 @@ function HomePage() {
                 />
               )}
             </div>
-            <div className="container-sections">
+            <div className="container-sections" id="Yearly_Balance_Sheet">
               {stockData.yearly_balance_sheet && (
                 <FinancialsTable
                   financials={stockData.yearly_balance_sheet}
@@ -364,7 +439,7 @@ function HomePage() {
                 />
               )}
             </div>
-            <div className="container-sections">
+            <div className="container-sections" id="Yearly_Cashflow">
               {stockData.yearly_cashflow && (
                 <FinancialsTable
                   financials={stockData.yearly_cashflow}
@@ -383,8 +458,8 @@ function HomePage() {
             </div>
 
             {stockData.holders && stockData.holders.Value && (
-              <div className="container-sections">
-                <h3>Ownership Breakdown</h3>
+              <div className="container-sections" id="Holdings">
+                <h3>Holdings</h3>
                 <sections
                   style={{
                     display: "flex",
@@ -444,12 +519,12 @@ function HomePage() {
 
             {stockData.sustainability_score &&
               Object.keys(stockData.sustainability_score).length > 0 && (
-                <div className="container-sections" id="sustainability_score">
+                <div className="container-sections" id="Sustainability">
                   <SustainabilityReport data={stockData.sustainability_score} />
                 </div>
               )}
 
-            <div className="container-sections" id="recommendations">
+            <div className="container-sections" id="Recommendations">
               <h3>Analyst Recommendations</h3>
               {stockData.recommendations &&
               stockData.recommendations.length > 0 ? (
@@ -478,8 +553,8 @@ function HomePage() {
                 <p>No recommendations available</p>
               )}
             </div>
-            {/* News sections */}
-            <div className="container-sections" id="news">
+
+            <div className="container-sections" id="News">
               <h3>Around the world</h3>
 
               {stockData.news && stockData.news.length > 0 ? (
