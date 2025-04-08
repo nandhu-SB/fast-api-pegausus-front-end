@@ -42,34 +42,6 @@ const Firstpage = () => {
       handlePasswordSubmit();
     }
   };
-  if (!isAuthenticated) {
-    return (
-      <div className="landing-page">
-        <div
-          className="title-container"
-          style={{
-            transform: titleVisible
-              ? `translateY(${scrollPosition * 0.5}px)`
-              : "translateY(-100%)",
-            opacity: titleVisible ? 1 : 0,
-          }}
-        >
-          <h1>PEGASUS TOOLBOX</h1>
-          <h3>Enter Password</h3>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Enter password"
-          />
-          <button onClick={handlePasswordSubmit} type="submit">
-            Submit
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>

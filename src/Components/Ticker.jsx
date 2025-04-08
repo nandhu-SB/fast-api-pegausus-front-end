@@ -4,18 +4,22 @@ const Ticker = () => {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    // Create script tag dynamically
     const script = document.createElement("script");
     script.src =
       "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
     script.async = true;
     script.innerHTML = JSON.stringify({
       symbols: [
-        { proName: "FOREXCOM:SPXUSD", title: "S&P 500 Index" },
-        { proName: "FOREXCOM:NSXUSD", title: "US 100 Cash CFD" },
-        { proName: "FX_IDC:EURUSD", title: "EUR to USD" },
-        { proName: "BITSTAMP:BTCUSD", title: "Bitcoin" },
-        { proName: "BITSTAMP:ETHUSD", title: "Ethereum" },
+        { proName: "BSE:RELIANCE", title: "Reliance Industries" },
+        { proName: "BSE:TCS", title: "Tata Consultancy Services" },
+        { proName: "BSE:INFY", title: "Infosys" },
+        { proName: "BSE:HDFCBANK", title: "HDFC Bank" },
+        { proName: "BSE:ICICIBANK", title: "ICICI Bank" },
+        { proName: "BSE:SBIN", title: "State Bank of India" },
+        { proName: "BSE:ITC", title: "ITC Ltd" },
+        { proName: "BSE:LT", title: "Larsen & Toubro" },
+        { proName: "BSE:KOTAKBANK", title: "Kotak Mahindra Bank" },
+        { proName: "BSE:HINDUNILVR", title: "Hindustan Unilever" },
       ],
       showSymbolLogo: true,
       isTransparent: false,
@@ -24,9 +28,8 @@ const Ticker = () => {
       locale: "en",
     });
 
-    // Append script to container
     if (containerRef.current) {
-      containerRef.current.innerHTML = ""; // Clear if re-rendered
+      containerRef.current.innerHTML = "";
       containerRef.current.appendChild(script);
     }
   }, []);

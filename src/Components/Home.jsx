@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -55,6 +55,13 @@ function HomePage() {
     "Recommendations",
     "News",
   ];
+  const [titleVisible, setTitleVisible] = useState(true);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+
+  const correctPassword = "1234"; // Change this to your desired password
+  const aboutRef = useRef(null);
 
   const apiUrl = import.meta.env.VITE_API_URL;
   const updateSectionMap = () => {
@@ -199,14 +206,69 @@ function HomePage() {
     return change.toFixed(2); // returns string like "5.43"
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollPosition(window.scrollY);
+      setTitleVisible(window.scrollY <= 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handlePasswordSubmit = () => {
+    if (password === correctPassword) {
+      setIsAuthenticated(true);
+    } else {
+      alert("Incorrect password! Please try again.");
+    }
+  };
+  const handleKeyDown2 = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handlePasswordSubmit();
+    }
+  };
+  if (!isAuthenticated) {
+    return (
+      <div className="landing-page">
+        <div
+          className="title-container"
+          style={{
+            transform: titleVisible
+              ? `translateY(${scrollPosition * 0.5}px)`
+              : "translateY(-100%)",
+            opacity: titleVisible ? 1 : 0,
+          }}
+        >
+          <h1>PEGASUS TOOLBOX</h1>
+          <h3>Enter Password</h3>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown2}
+            placeholder="Enter password"
+          />
+          <button onClick={handlePasswordSubmit} type="submit">
+            Submit
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Ticker />
       <>
+        {visibleSections && visibleSections.length > 0 && (
+          <button className="hamburger" onClick={toggleSidebar}>
+            ☰
+          </button>
+        )}
+
         {/* Hamburger Icon */}
-        <button className="hamburger" onClick={toggleSidebar}>
-          ☰
-        </button>
 
         {/* Sidebar */}
         <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
