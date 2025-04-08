@@ -11,18 +11,16 @@ import {
 } from "recharts";
 
 const PriceChart = ({ stockData, fetchStockData }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState("7d");
+  const [selectedPeriod, setSelectedPeriod] = useState("1y");
 
   useEffect(() => {
     fetchStockData(selectedPeriod);
   }, [selectedPeriod]);
 
   return (
-    <div className="container-section" id="price-chart">
-      <h3>Stock Price Trend</h3>
-
+    <div>
       {/* Dropdown to Select Time Period */}
-      <label htmlFor="period">Select Period: </label>
+      {/* <label htmlFor="period">Select Period: </label>
       <select
         id="period"
         value={selectedPeriod}
@@ -33,7 +31,7 @@ const PriceChart = ({ stockData, fetchStockData }) => {
         <option value="1mo">1 Month</option>
         <option value="3mo">3 Months</option>
         <option value="1y">1 Year</option>
-      </select>
+      </select> */}
 
       {stockData.history && stockData.history.length > 0 && (
         <ResponsiveContainer width="100%" height={300}>
@@ -82,6 +80,7 @@ const PriceChart = ({ stockData, fetchStockData }) => {
               stroke="#8884d8"
               strokeWidth={2}
               dot={{ r: 4 }}
+              isAnimationActive={true}
             />
             <Brush
               dataKey="date"

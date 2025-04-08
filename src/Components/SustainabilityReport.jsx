@@ -119,6 +119,7 @@ const Controversies = ({ data }) => {
   return (
     <div className="controversies">
       <h3>Controversies</h3>
+      <p>Below controversies are found:</p>
       {data.relatedControversy.length > 0 ? (
         <ul>
           {data.relatedControversy.map((item, index) => (
@@ -135,7 +136,7 @@ const Controversies = ({ data }) => {
 // Main component that combines everything
 const SustainabilityReport = ({ data }) => {
   return (
-    <div className="sustainability-report">
+    <div>
       <h2>Sustainability Report</h2>
       {/* <Exclusions exclusions={data} /> */}
       <EsgScores data={data} />

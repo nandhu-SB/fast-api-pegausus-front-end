@@ -10,6 +10,29 @@ const FinancialsTable = ({ financials, title, selectedKeys }) => {
     return `${Math.round(crores).toLocaleString("en-IN")} Cr`;
   };
 
+  const formatNumbers = (value) => {
+    if (value == null || value === "N/A") return "N/A";
+
+    const absValue = Math.abs(value);
+    const sign = value < 0 ? "-" : "";
+
+    if (absValue >= 1_00_00_000) {
+      return (
+        sign +
+        (+(absValue / 1_00_00_000).toFixed(2)).toLocaleString("en-IN") +
+        " Cr"
+      );
+    } else if (absValue >= 1_00_000) {
+      return (
+        sign +
+        (+(absValue / 1_00_000).toFixed(2)).toLocaleString("en-IN") +
+        " L"
+      );
+    } else {
+      return sign + absValue.toFixed(2);
+    }
+  };
+
   // Extract all financial keys (metrics)
   const allKeys = Object.keys(financials || {});
 
@@ -24,7 +47,7 @@ const FinancialsTable = ({ financials, title, selectedKeys }) => {
   }
 
   return (
-    <div className="container-section">
+    <div>
       <h3>{title}</h3>
       <button onClick={() => setShowAll(!showAll)}>
         {showAll
@@ -50,7 +73,7 @@ const FinancialsTable = ({ financials, title, selectedKeys }) => {
                   <td>{key}</td>
                   {periods.map((date) => (
                     <td key={`${key}-${date}`} style={{ textAlign: "right" }}>
-                      {formatToCrores(financials[key][date])}
+                      {formatNumbers(financials[key][date])}
                     </td>
                   ))}
                 </tr>

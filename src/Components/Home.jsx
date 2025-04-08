@@ -84,15 +84,26 @@ function HomePage() {
     setLoading(false);
   };
 
-  const formatMarketCap = (value) => {
-    if (!value || value === "N/A") return "N/A";
+  const formatNumbers = (value) => {
+    if (value == null || value === "N/A") return "N/A";
 
-    if (value >= 1_00_00_00_000) {
-      return (value / 1_00_00_00_000).toFixed(2) + " Cr";
-    } else if (value >= 1_00_000) {
-      return (value / 1_00_000).toFixed(2) + " L";
+    const absValue = Math.abs(value);
+    const sign = value < 0 ? "-" : "";
+
+    if (absValue >= 1_00_00_000) {
+      return (
+        sign +
+        (+(absValue / 1_00_00_000).toFixed(2)).toLocaleString("en-IN") +
+        " Cr"
+      );
+    } else if (absValue >= 1_00_000) {
+      return (
+        sign +
+        (+(absValue / 1_00_000).toFixed(2)).toLocaleString("en-IN") +
+        " L"
+      );
     } else {
-      return value.toFixed(2);
+      return sign + absValue.toFixed(2);
     }
   };
 
@@ -117,6 +128,25 @@ function HomePage() {
   };
 
   const COLORS = ["#8884d8", "#82ca9d", "#ffc658"];
+  const calculatePercentageChange = (history, periodDays) => {
+    if (!history || history.length === 0) return null;
+
+    const sorted = [...history].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+    const latest = sorted[sorted.length - 1];
+    const latestDate = new Date(latest.date);
+    const targetDate = new Date(latestDate);
+    targetDate.setDate(targetDate.getDate() - periodDays);
+
+    // Find the closest date before or equal to targetDate
+    let past = sorted.findLast((item) => new Date(item.date) <= targetDate);
+
+    if (!past) past = sorted[0];
+
+    const change = ((latest.close - past.close) / past.close) * 100;
+    return change.toFixed(2); // returns string like "5.43"
+  };
 
   return (
     <>
@@ -149,17 +179,18 @@ function HomePage() {
             <h2>{stockData.symbol}</h2>
             <p>Sector: {stockData.sector}</p>
             <p>Industry: {stockData.industry}</p>
-            <div className="container-section" id="summary">
+            <div className="container-sections" id="summary">
               <p>
                 <strong>Overview</strong>
                 <br />
                 {stockData.business_summary}
               </p>
             </div>
-            <div className="container-section" id="fundaementals">
+
+            <div className="container-sections" id="fundaementals">
               <h3>Fundamentals</h3>
-              <div className="section">
-                <div className="subsection">
+              <div className="sections">
+                <div className="subsections">
                   <p>
                     <strong>Price:</strong> ₹{stockData.price}
                   </p>
@@ -181,9 +212,11 @@ function HomePage() {
                   <p>
                     <strong>52-Week Low:</strong> ₹{stockData["52_week_low"]}
                   </p>
+                </div>
+                <div className="subsections">
                   <p>
                     <strong>Market Cap:</strong>{" "}
-                    {formatMarketCap(stockData.market_cap)}
+                    {formatNumbers(stockData.market_cap)}
                   </p>
                   <p>
                     <strong>P/E Ratio:</strong> {stockData.pe_ratio}
@@ -198,144 +231,225 @@ function HomePage() {
                     <strong>Industry:</strong> {stockData.industry}
                   </p>
                   <p>
-                    <strong>Volume:</strong> {formatMarketCap(stockData.volume)}
+                    <strong>Volume:</strong> {formatNumbers(stockData.volume)}
                   </p>
                   <p>
                     <strong>Average Volume:</strong>{" "}
-                    {formatMarketCap(stockData.average_volume)}
+                    {formatNumbers(stockData.average_volume)}
                   </p>
                 </div>
               </div>
             </div>
+            <div className="container-sections">
+              <h3>Performance Summary</h3>
+              <div className="cards">
+                <div className="card">
+                  <h4>1 Year</h4>
+                  <p
+                    style={{
+                      color:
+                        parseFloat(
+                          calculatePercentageChange(stockData.history, 251)
+                        ) >= 0
+                          ? "green"
+                          : "red",
+                    }}
+                  >
+                    {calculatePercentageChange(stockData.history, 251)}%
+                  </p>
+                </div>
+                <div className="card">
+                  <h4>6 Month</h4>
+                  <p
+                    style={{
+                      color:
+                        parseFloat(
+                          calculatePercentageChange(stockData.history, 104)
+                        ) >= 0
+                          ? "green"
+                          : "red",
+                    }}
+                  >
+                    {calculatePercentageChange(stockData.history, 104)}%
+                  </p>
+                </div>
+                <div className="card">
+                  <h4>1 Month</h4>
+                  <p
+                    style={{
+                      color:
+                        parseFloat(
+                          calculatePercentageChange(stockData.history, 21)
+                        ) >= 0
+                          ? "green"
+                          : "red",
+                    }}
+                  >
+                    {calculatePercentageChange(stockData.history, 21)}%
+                  </p>
+                </div>
+              </div>
+              <PriceChart
+                stockData={stockData}
+                fetchStockData={fetchStockData}
+              />
+            </div>
+            <div className="container-sections">
+              {stockData.quarterly_financials && (
+                <FinancialsTable
+                  financials={stockData.quarterly_financials}
+                  title="Quarterly Financials"
+                  selectedKeys={[
+                    "Operating Revenue",
+                    "Total Revenue",
+                    "Cost Of Revenue",
+                    "Gross Profit",
+                    "Operating Expense",
+                    "Other Operating Expenses",
+                    "Operating Income",
+                    "Net Non Operating Interest Income Expense",
+                  ]}
+                />
+              )}
+            </div>
+            <div className="container-sections">
+              {stockData.yearly_financials && (
+                <FinancialsTable
+                  financials={stockData.yearly_financials}
+                  title="Yearly Financials"
+                  selectedKeys={[
+                    "Operating Revenue",
+                    "Total Revenue",
+                    "Cost Of Revenue",
+                    "Gross Profit",
+                    "Operating Expense",
+                    "Other Operating Expenses",
+                    "Operating Income",
+                    "Net Non Operating Interest Income Expense",
+                  ]}
+                />
+              )}
+            </div>
+            <div className="container-sections">
+              {stockData.quarterly_balance_sheet && (
+                <FinancialsTable
+                  financials={stockData.quarterly_balance_sheet}
+                  title="Quarterly Balance Sheet"
+                  selectedKeys={[
+                    "Current Assets",
+                    "Total Non Current Assets",
+                    "Total Assets",
+                    "Current Liabilities",
+                    "Total Non Current Liabilities Net Minority Interest",
+                    "Total Liabilities Net Minority Interest",
+                    "Total Equity Gross Minority Interest",
+                  ]}
+                />
+              )}
+            </div>
+            <div className="container-sections">
+              {stockData.yearly_balance_sheet && (
+                <FinancialsTable
+                  financials={stockData.yearly_balance_sheet}
+                  title="Yearly Balance Sheet"
+                  selectedKeys={[
+                    "Current Assets",
+                    "Total Non Current Assets",
+                    "Total Assets",
+                    "Current Liabilities",
+                    "Total Non Current Liabilities Net Minority Interest",
+                    "Total Liabilities Net Minority Interest",
+                    "Total Equity Gross Minority Interest",
+                  ]}
+                />
+              )}
+            </div>
+            <div className="container-sections">
+              {stockData.yearly_cashflow && (
+                <FinancialsTable
+                  financials={stockData.yearly_cashflow}
+                  title="Yearly Cash Flow"
+                  selectedKeys={[
+                    "Cash Flow Statement",
+                    "Operating Cash Flow",
+                    "Investing Cash Flow",
+                    "Financing Cash Flow",
+                    "Changes In Cash",
+                    "Beginning Cash Position",
+                    "End Cash Position",
+                  ]}
+                />
+              )}
+            </div>
 
-            <PriceChart stockData={stockData} fetchStockData={fetchStockData} />
-            {stockData.quarterly_financials && (
-              <FinancialsTable
-                financials={stockData.quarterly_financials}
-                title="Quarterly Financials"
-                selectedKeys={[
-                  "Operating Revenue",
-                  "Total Revenue",
-                  "Cost Of Revenue",
-                  "Gross Profit",
-                  "Operating Expense",
-                  "Other Operating Expenses",
-                  "Operating Income",
-                  "Net Non Operating Interest Income Expense",
-                ]}
-              />
-            )}
-            {stockData.yearly_financials && (
-              <FinancialsTable
-                financials={stockData.yearly_financials}
-                title="Yearly Financials"
-                selectedKeys={[
-                  "Operating Revenue",
-                  "Total Revenue",
-                  "Cost Of Revenue",
-                  "Gross Profit",
-                  "Operating Expense",
-                  "Other Operating Expenses",
-                  "Operating Income",
-                  "Net Non Operating Interest Income Expense",
-                ]}
-              />
-            )}
-            {stockData.quarterly_balance_sheet && (
-              <FinancialsTable
-                financials={stockData.quarterly_balance_sheet}
-                title="Quarterly Balance Sheet"
-                selectedKeys={[
-                  "Current Assets",
-                  "Total Non Current Assets",
-                  "Total Assets",
-                  "Current Liabilities",
-                  "Total Non Current Liabilities Net Minority Interest",
-                  "Total Liabilities Net Minority Interest",
-                  "Total Equity Gross Minority Interest",
-                ]}
-              />
-            )}
-            {stockData.yearly_balance_sheet && (
-              <FinancialsTable
-                financials={stockData.yearly_balance_sheet}
-                title="Yearly Balance Sheet"
-                selectedKeys={[
-                  "Current Assets",
-                  "Total Non Current Assets",
-                  "Total Assets",
-                  "Current Liabilities",
-                  "Total Non Current Liabilities Net Minority Interest",
-                  "Total Liabilities Net Minority Interest",
-                  "Total Equity Gross Minority Interest",
-                ]}
-              />
-            )}
-
-            {stockData.yearly_cashflow && (
-              <FinancialsTable
-                financials={stockData.yearly_cashflow}
-                title="Yearly Cash Flow"
-                selectedKeys={[
-                  "Cash Flow Statement",
-                  "Operating Cash Flow",
-                  "Investing Cash Flow",
-                  "Financing Cash Flow",
-                  "Changes In Cash",
-                  "Beginning Cash Position",
-                  "End Cash Position",
-                ]}
-              />
-            )}
-            <div className="container-section" id="holdings">
-              <h3>Ownership Breakdown</h3>
-              {stockData.holders && stockData.holders.Value && (
-                <section
+            {stockData.holders && stockData.holders.Value && (
+              <div className="container-sections">
+                <h3>Ownership Breakdown</h3>
+                <sections
                   style={{
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
+                    width: "100%",
                   }}
                 >
-                  <PieChart width={400} height={300}>
-                    <Pie
-                      data={getHoldingsData()}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(1)}%`
-                      }
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {getHoldingsData().map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Legend />
-                  </PieChart>
+                  <div
+                    style={{
+                      width: "100%",
+                      maxWidth: "600px",
+                      height: "300px",
+                    }}
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={getHoldingsData()}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) =>
+                            `${name}: ${(percent * 100).toFixed(1)}%`
+                          }
+                          outerRadius="60%"
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {getHoldingsData().map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Legend verticalAlign="bottom" />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
 
-                  <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+                  <ul
+                    style={{
+                      listStyle: "none",
+                      paddingLeft: 0,
+                      marginTop: "1rem",
+                    }}
+                  >
                     <li>
                       <strong>Number of Institutions:</strong>{" "}
                       {stockData.holders.Value.institutionsCount}
                     </li>
                   </ul>
-                </section>
-              )}
-            </div>
-            <div className="container-sections" id="sustainability_score">
-              {stockData.sustainability_score &&
-                Object.keys(stockData.sustainability_score).length > 0 && (
+                </sections>
+              </div>
+            )}
+
+            {stockData.sustainability_score &&
+              Object.keys(stockData.sustainability_score).length > 0 && (
+                <div className="container-sections" id="sustainability_score">
                   <SustainabilityReport data={stockData.sustainability_score} />
-                )}
-            </div>
-            <div className="container-section" id="recommendations">
+                </div>
+              )}
+
+            <div className="container-sections" id="recommendations">
               <h3>Analyst Recommendations</h3>
               {stockData.recommendations &&
               stockData.recommendations.length > 0 ? (
@@ -364,12 +478,12 @@ function HomePage() {
                 <p>No recommendations available</p>
               )}
             </div>
-            {/* News Section */}
-            <div className="container-section" id="news">
+            {/* News sections */}
+            <div className="container-sections" id="news">
               <h3>Around the world</h3>
 
               {stockData.news && stockData.news.length > 0 ? (
-                <section className="news-section">
+                <sections className="news-sections">
                   <ul className="news-list">
                     {stockData.news.map((article, index) => (
                       <li key={index} className="news-item">
@@ -388,7 +502,7 @@ function HomePage() {
                       </li>
                     ))}
                   </ul>
-                </section>
+                </sections>
               ) : (
                 <p>No recent news available.</p>
               )}
