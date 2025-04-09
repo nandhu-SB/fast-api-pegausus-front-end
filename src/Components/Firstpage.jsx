@@ -5,6 +5,7 @@ import "aos/dist/aos.css";
 import Ticker from "./Ticker";
 import PortfolioRisk from "./RiskAnalysis";
 import { Link } from "react-router-dom";
+import AUMChart from "./AUMchart";
 
 const Firstpage = () => {
   const [titleVisible, setTitleVisible] = useState(true);
@@ -55,7 +56,7 @@ const Firstpage = () => {
             opacity: titleVisible ? 1 : 0,
           }}
         >
-          <h1>PEGASUS TOOLBOX</h1>
+          <h1>DEEPFINDER</h1>
           <p>A MOAT PMS INITIATIVE</p>
           <div className="features">
             <button
@@ -73,6 +74,14 @@ const Firstpage = () => {
         </div>
 
         <div className="content-container">
+          <section className="section" data-aos="fade-up-left">
+            <h3>Assets Under Management (AUM) over the years (in Crores)</h3>
+            <div className="section-cards-container" style={{ width: "100%" }}>
+              <div className="section-cards" style={{ width: "100%" }}>
+                <AUMChart />
+              </div>
+            </div>
+          </section>
           <section className="section" ref={aboutRef}>
             <h2>About Us</h2>
             <div className="sections-cards-container">

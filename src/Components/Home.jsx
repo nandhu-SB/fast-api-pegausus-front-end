@@ -241,7 +241,7 @@ function HomePage() {
             opacity: titleVisible ? 1 : 0,
           }}
         >
-          <h1>PEGASUS TOOLBOX</h1>
+          <h1>DEEPFINDER</h1>
           <h3>Enter Password</h3>
           <input
             type="password"
